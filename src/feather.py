@@ -105,6 +105,21 @@ class FEATHERG:
             graph_embedding = np.mean(features, axis=0)
         return graph_embedding
 
+    def _add_self_loops_to_nx_graph(self, graph):
+        """
+        Ensuring every node has a self-loop (edge from node to itself).
+        """
+        missing_self_loops_list = [
+            node for node in graph.nodes if not graph.has_edge(node, node)
+        ]
+        if not missing_self_loops_list:
+            return graph  # All good
+    
+        # Only copy if we need to modify
+        graph = graph.copy()
+        graph.add_edges_from((node, node) for node in missing_self_loops_list)
+        return graph
+
     def _fit_a_FEATHER(self, graph):
         """
         Creating a graph level embedding.
@@ -115,6 +130,9 @@ class FEATHERG:
             * **graph_embedding** *(Numpy array)* - The whole graph embedding vector.
         """
         sub_model = FEATHER(self.theta_max, self.eval_points, self.order)
+
+        graph = self._add_self_loops_to_nx_graph(graph)
+        
         log_degree_feature = np.array([math.log(graph.degree(node) + 1) for node in range(graph.number_of_nodes())])
         log_degree_feature = log_degree_feature.reshape(-1, 1)
 
