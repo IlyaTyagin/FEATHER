@@ -115,8 +115,13 @@ class FEATHERG:
             * **graph_embedding** *(Numpy array)* - The whole graph embedding vector.
         """
         sub_model = FEATHER(self.theta_max, self.eval_points, self.order)
-        feature = np.array([math.log(graph.degree(node)+1) for node in range(graph.number_of_nodes())])
-        feature = feature.reshape(-1, 1)
+        log_degree_feature = np.array([math.log(graph.degree(node) + 1) for node in range(graph.number_of_nodes())])
+        log_degree_feature = log_degree_feature.reshape(-1, 1)
+
+        clust_coef_feature = np.array([nx.clustering(graph, node) for node in range(graph.number_of_nodes())])
+        clust_coef_feature = clust_coef_feature.reshape(-1, 1)
+
+        feature  = np.concatenate([log_degree_feature, clust_coef_feature], axis=1)
         sub_model.fit(graph, feature)
         features = sub_model.get_embedding()
         graph_embedding = self._pooling(features)
