@@ -129,6 +129,9 @@ class FEATHERG:
         Return types:
             * **graph_embedding** *(Numpy array)* - The whole graph embedding vector.
         """
+        assert list(range(graph.number_of_nodes())) == sorted(graph.nodes), (
+            "Something is not right with node indices (e.g., missing nodes in a graph, indices are not numerical, etc.)")
+        
         sub_model = FEATHER(self.theta_max, self.eval_points, self.order)
 
         graph = self._add_self_loops_to_nx_graph(graph)
